@@ -1,4 +1,5 @@
 #include "../include/responses/not_found.h"
+#include "../include/responses/internal_error.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,11 +28,7 @@ void serve_html(int client_socket, const char *file_name) {
 
     struct stat file_stat;
     if (stat(file_path, &file_stat) < 0) {
-        const char *error_response = "HTTP/1.1 500 Internal Server Error\r\n"
-                                     "Content-Type: text/plain\r\n"
-                                     "Content-Length: 21\r\n\r\n"
-                                     "Internal Server Error";
-        send(client_socket, error_response, strlen(error_response), 0);
+        InternalServerError(client_socket);
         fclose(file);
         return;
     }

@@ -4,6 +4,9 @@
         "database.h": "c",
         "winsock2.h": "c",
         "server.h": "c",
-        "ws2tcpip.h": "c"
+        "ws2tcpip.h": "c",
+        "not_found.h": "c",
+        "internal-error.h": "c",
+        "stdlib.h": "c"
     }
 }
