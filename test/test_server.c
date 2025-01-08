@@ -13,10 +13,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #define SERVER_PORT 4000
 #define SERVER_ADDR "127.0.0.1"
 #define BUFFER_SIZE 1024
+
+int connect_to_server();
+void test_connection();
+void test_server_response();
 
 int main()
 {
@@ -29,19 +34,29 @@ int main()
     }
 #endif
 
-    int sock;
-    struct sockaddr_in server_address;
+    printf("Running unit and integration tests...\n");
+    test_connection();
+    test_server_response();
+    printf("All tests passed successfully!\n");
 
-    sock = socket(AF_INET, SOCK_STREAM, 0);
+#ifdef _WIN32
+    WSACleanup();
+#endif
+
+    return EXIT_SUCCESS;
+}
+
+// Function to connect to the server
+int connect_to_server()
+{
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0)
     {
         perror("Socket creation failed");
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return EXIT_FAILURE;
+        return -1;
     }
 
+    struct sockaddr_in server_address = {0};
     server_address.sin_family = AF_INET;
     server_address.sin_port = htons(SERVER_PORT);
 
@@ -49,28 +64,26 @@ int main()
     {
         perror("Invalid address or address not supported");
         CLOSESOCKET(sock);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return EXIT_FAILURE;
+        return -1;
     }
 
     if (connect(sock, (struct sockaddr *)&server_address, sizeof(server_address)) < 0)
     {
         perror("Connection to server failed");
         CLOSESOCKET(sock);
-#ifdef _WIN32
-        WSACleanup();
-#endif
-        return EXIT_FAILURE;
+        return -1;
     }
 
-    printf("Server is up and running!\n");
-
-    CLOSESOCKET(sock);
-#ifdef _WIN32
-    WSACleanup();
-#endif
-
-    return EXIT_SUCCESS;
+    return sock;
 }
+
+// Unit test: Verify connection to the server
+void test_connection()
+{
+    printf("Testing server connection...\n");
+    int sock = connect_to_server();
+    assert(sock >= 0); 
+    printf("Connection test passed!\n");
+    CLOSESOCKET(sock);
+}
+
