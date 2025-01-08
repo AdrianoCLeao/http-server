@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Iinclude
+CFLAGS = -Wall -I$(INCLUDE_DIR)
 SRC_DIR = src
 BUILD_DIR = bin
 INCLUDE_DIR = include
@@ -9,10 +9,12 @@ OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
 TARGET := $(BUILD_DIR)/main.exe
 
 ifeq ($(OS),Windows_NT)
+    LDFLAGS = -lws2_32
     MKDIR_P = if not exist "$(subst /,\,$(strip $(1)))" mkdir "$(subst /,\,$(strip $(1)))"
     RMDIR = rmdir /s /q
     EXECUTABLE = $(TARGET)
 else
+    LDFLAGS =
     MKDIR_P = mkdir -p $(1)
     RMDIR = rm -rf
     EXECUTABLE = ./$(TARGET)
@@ -22,7 +24,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	@$(call MKDIR_P, $(BUILD_DIR))
-	@$(CC) $(CFLAGS) -o $@ $^
+	@$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@$(call MKDIR_P, $(dir $@))
