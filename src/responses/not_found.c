@@ -1,4 +1,4 @@
-#include "../include/responses/not_found.h"
+#include "../../include/responses/not_found.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,27 +6,28 @@
 
 #ifdef _WIN32
     #include <winsock2.h>
-    #define CLOSESOCKET closesocket
 #else
     #include <unistd.h>
-    #define CLOSESOCKET close
 #endif
 
 #define BUFFER_SIZE 4096
-#define DOCUMENT_ROOT "assets"
+#define NOT_FOUND_PAGE "assets/404.html"
 
-void serve_html(int client_socket, const char *file_name) {
-    char file_path[BUFFER_SIZE];
-    snprintf(file_path, sizeof(file_path), "%s/%s", DOCUMENT_ROOT, file_name);
+void NotFoundException(int client_socket) {
+    char buffer[BUFFER_SIZE];
+    FILE *file = fopen(NOT_FOUND_PAGE, "r");
 
-    FILE *file = fopen(file_path, "r");
     if (!file) {
-        NotFoundException(client_socket);
+        const char *fallback_response = "HTTP/1.1 404 Not Found\r\n"
+                                        "Content-Type: text/plain\r\n"
+                                        "Content-Length: 35\r\n\r\n"
+                                        "404 Not Found - Custom page missing";
+        send(client_socket, fallback_response, strlen(fallback_response), 0);
         return;
     }
 
     struct stat file_stat;
-    if (stat(file_path, &file_stat) < 0) {
+    if (stat(NOT_FOUND_PAGE, &file_stat) < 0) {
         const char *error_response = "HTTP/1.1 500 Internal Server Error\r\n"
                                      "Content-Type: text/plain\r\n"
                                      "Content-Length: 21\r\n\r\n"
@@ -36,14 +37,12 @@ void serve_html(int client_socket, const char *file_name) {
         return;
     }
 
-    const char *header_template = "HTTP/1.1 200 OK\r\n"
+    const char *header_template = "HTTP/1.1 404 Not Found\r\n"
                                   "Content-Type: text/html\r\n"
                                   "Content-Length: %ld\r\n\r\n";
-    char header[BUFFER_SIZE];
-    snprintf(header, sizeof(header), header_template, file_stat.st_size);
-    send(client_socket, header, strlen(header), 0);
+    snprintf(buffer, sizeof(buffer), header_template, file_stat.st_size);
+    send(client_socket, buffer, strlen(buffer), 0);
 
-    char buffer[BUFFER_SIZE];
     size_t bytes_read;
     while ((bytes_read = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
         send(client_socket, buffer, bytes_read, 0);
