@@ -33,7 +33,6 @@ void handle_request(int client_socket, const char *request) {
         return;
     }
 
-    // Check the requested path
     if (strcmp(path, "/hello") == 0) {
         const char *response = "HTTP/1.1 200 OK\r\n"
                                "Content-Type: text/plain\r\n"
@@ -41,7 +40,6 @@ void handle_request(int client_socket, const char *request) {
                                "Hello, World!";
         send(client_socket, response, strlen(response), 0);
     } else {
-        // Serve HTML files for other paths
         const char *file_name = path[1] ? path + 1 : "index.html";
         serve_html(client_socket, file_name);
     }
