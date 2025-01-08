@@ -12,7 +12,7 @@
 #endif
 
 #define BUFFER_SIZE 4096
-#define DOCUMENT_ROOT "../assets" 
+#define DOCUMENT_ROOT "assets"
 
 void serve_html(int client_socket, const char *file_name) {
     char file_path[BUFFER_SIZE];
