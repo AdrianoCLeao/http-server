@@ -1,5 +1,6 @@
 #include "../include/server.h"
 #include "../include/html_handler.h"
+#include "../include/responses/not_implemented.h"
 
 #ifdef _WIN32
     #include <winsock2.h>
@@ -25,11 +26,7 @@ void handle_request(int client_socket, const char *request) {
     sscanf(request, "%s %s", method, path);
 
     if (strcmp(method, "GET") != 0) {
-        const char *not_implemented_response = "HTTP/1.1 501 Not Implemented\r\n"
-                                               "Content-Type: text/plain\r\n"
-                                               "Content-Length: 18\r\n\r\n"
-                                               "501 Not Implemented";
-        send(client_socket, not_implemented_response, strlen(not_implemented_response), 0);
+        NotImplemented(client_socket); 
         return;
     }
 

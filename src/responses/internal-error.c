@@ -11,7 +11,7 @@
 #endif
 
 #define BUFFER_SIZE 4096
-#define INTERNAL_ERROR_PAGE "assets/500.html"
+#define INTERNAL_ERROR_PAGE "assets/responses/500.html"
 
 void InternalServerError(int client_socket) {
     char buffer[BUFFER_SIZE];
