@@ -87,3 +87,35 @@ void test_connection()
     CLOSESOCKET(sock);
 }
 
+// Integration test: Send a request and validate the response
+void test_server_response()
+{
+    printf("Testing server response...\n");
+    int sock = connect_to_server();
+    assert(sock >= 0);
+
+    const char *request = "GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n";
+    char buffer[BUFFER_SIZE] = {0};
+
+    if (send(sock, request, strlen(request), 0) < 0)
+    {
+        perror("Failed to send request");
+        CLOSESOCKET(sock);
+        assert(0); 
+    }
+
+    int bytes_received = recv(sock, buffer, BUFFER_SIZE - 1, 0);
+    if (bytes_received < 0)
+    {
+        perror("Failed to receive response");
+        CLOSESOCKET(sock);
+        assert(0);
+    }
+
+    buffer[bytes_received] = '\0'; 
+    printf("Server response:\n%s\n", buffer);
+    assert(strstr(buffer, "HTTP/1.1") != NULL); 
+
+    printf("Response test passed!\n");
+    CLOSESOCKET(sock);
+}
