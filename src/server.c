@@ -87,7 +87,7 @@ void start_server() {
         exit(EXIT_FAILURE);
     }
 
-    printf("Server running on port %d\n", PORT);
+    printf("Server running on http://localhost:%d\n", PORT);
 
     while (1) {
         int new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
@@ -103,7 +103,6 @@ void start_server() {
 #endif
 
         if (bytes_read > 0) {
-            printf("Request received:\n%s\n", buffer);
             handle_request(new_socket, buffer);
         }
 
