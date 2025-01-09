@@ -25,13 +25,19 @@
 #define BUFFER_SIZE 4096
 
 void handle_request(int client_socket, const char *request, const char *client_ip) {
+    clock_t start_time = start_request();
+
     char method[16], route[256];
     sscanf(request, "%s %s", method, route);
 
+    increment_request_count();
+    increment_method_count(method);
+    increment_route_count(route);
     write_log(method, route, client_ip);
 
     if (strcmp(method, "GET") != 0) {
-        NotImplemented(client_socket); 
+        NotImplemented(client_socket);
+        end_request(start_time);
         return;
     }
 
@@ -45,6 +51,8 @@ void handle_request(int client_socket, const char *request, const char *client_i
         const char *file_name = route[1] ? route + 1 : "index.html";
         serve_html(client_socket, file_name);
     }
+
+    end_request(start_time);
 }
 
 void start_server() {
