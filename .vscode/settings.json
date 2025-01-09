@@ -7,6 +7,7 @@
         "ws2tcpip.h": "c",
         "not_found.h": "c",
         "internal-error.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "string.h": "c"
     }
 }
