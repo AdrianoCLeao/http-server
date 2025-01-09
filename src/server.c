@@ -2,6 +2,7 @@
 #include "../include/html_handler.h"
 #include "../include/responses/not_implemented.h"
 #include "../include/log.h"
+#include "../include/metrics.h"
 
 #ifdef _WIN32
     #include <winsock2.h>
