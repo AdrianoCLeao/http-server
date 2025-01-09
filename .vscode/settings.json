@@ -8,6 +8,9 @@
         "not_found.h": "c",
         "internal-error.h": "c",
         "stdlib.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "types.h": "c",
+        "stat.h": "c",
+        "direct.h": "c"
     }
 }

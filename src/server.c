@@ -1,12 +1,14 @@
 #include "../include/server.h"
 #include "../include/html_handler.h"
 #include "../include/responses/not_implemented.h"
+#include "../include/log.h"
 
 #ifdef _WIN32
     #include <winsock2.h>
     #include <WS2tcpip.h>
     #pragma comment(lib, "ws2_32.lib")
     #define CLOSESOCKET closesocket
+    #define inet_ntop InetNtopA 
 #else
     #include <unistd.h>
     #include <arpa/inet.h>
@@ -21,23 +23,25 @@
 #define PORT 4000
 #define BUFFER_SIZE 4096
 
-void handle_request(int client_socket, const char *request) {
-    char method[16], path[256];
-    sscanf(request, "%s %s", method, path);
+void handle_request(int client_socket, const char *request, const char *client_ip) {
+    char method[16], route[256];
+    sscanf(request, "%s %s", method, route);
+
+    write_log(method, route, client_ip);
 
     if (strcmp(method, "GET") != 0) {
         NotImplemented(client_socket); 
         return;
     }
 
-    if (strcmp(path, "/hello") == 0) {
+    if (strcmp(route, "/hello") == 0) {
         const char *response = "HTTP/1.1 200 OK\r\n"
                                "Content-Type: text/plain\r\n"
                                "Content-Length: 13\r\n\r\n"
                                "Hello, World!";
         send(client_socket, response, strlen(response), 0);
     } else {
-        const char *file_name = path[1] ? path + 1 : "index.html";
+        const char *file_name = route[1] ? route + 1 : "index.html";
         serve_html(client_socket, file_name);
     }
 }
@@ -90,10 +94,19 @@ void start_server() {
     printf("Server running on http://localhost:%d\n", PORT);
 
     while (1) {
-        int new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
+        struct sockaddr_in client_address;
+        socklen_t client_len = sizeof(client_address);
+        char client_ip[INET_ADDRSTRLEN];
+
+        int new_socket = accept(server_fd, (struct sockaddr *)&client_address, &client_len);
         if (new_socket < 0) {
             perror("Accept failed");
             continue;
+        }
+
+        if (inet_ntop(AF_INET, &client_address.sin_addr, client_ip, sizeof(client_ip)) == NULL) {
+            perror("Failed to retrieve client IP");
+            strcpy(client_ip, "Unknown");
         }
 
 #ifdef _WIN32
@@ -103,7 +116,7 @@ void start_server() {
 #endif
 
         if (bytes_read > 0) {
-            handle_request(new_socket, buffer);
+            handle_request(new_socket, buffer, client_ip);
         }
 
         CLOSESOCKET(new_socket);
