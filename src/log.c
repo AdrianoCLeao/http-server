@@ -13,7 +13,7 @@
 #endif
 
 #define LOG_DIR "logs"
-#define LOG_FILE "logs/access.csv"
+#define LOG_FILE "logs/log.csv"
 
 void write_log(const char *method, const char *route, const char *client_ip) {
     FILE *log_file;

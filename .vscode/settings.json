@@ -11,6 +11,7 @@
         "string.h": "c",
         "types.h": "c",
         "stat.h": "c",
-        "direct.h": "c"
+        "direct.h": "c",
+        "log.h": "c"
     }
 }
