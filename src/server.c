@@ -126,6 +126,8 @@ void start_server() {
 
         if (bytes_read > 0) {
             handle_request(new_socket, buffer, client_ip);
+            printf("\nServer shutting down. Metrics collected:\n");
+            display_metrics();
         }
 
         CLOSESOCKET(new_socket);
