@@ -32,7 +32,6 @@ void handle_request(int client_socket, const char *request, const char *client_i
 
     increment_request_count();
     increment_method_count(method);
-    increment_route_count(route);
     write_log(method, route, client_ip);
 
     if (strcmp(method, "GET") != 0) {
@@ -126,9 +125,9 @@ void start_server() {
 
         if (bytes_read > 0) {
             handle_request(new_socket, buffer, client_ip);
-            printf("\nServer shutting down. Metrics collected:\n");
-            display_metrics();
         }
+
+        save_metrics_to_csv();
 
         CLOSESOCKET(new_socket);
     }

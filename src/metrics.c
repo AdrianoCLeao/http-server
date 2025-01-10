@@ -3,15 +3,17 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <sys/stat.h>
+
+#ifdef _WIN32
+    #include <direct.h>
+#else
+    #include <unistd.h>
+#endif
 
 static int total_requests = 0;
 static double total_response_time = 0.0;
 static int method_counts[4] = {0}; 
-static struct route_metric {
-    char route[256];
-    int count;
-} *route_metrics = NULL;
-static int route_count = 0;
 
 void increment_request_count() {
     total_requests++;
@@ -27,20 +29,6 @@ void increment_method_count(const char *method) {
     } else if (strcmp(method, "DELETE") == 0) {
         method_counts[3]++;
     }
-}
-
-void increment_route_count(const char *route) {
-    for (int i = 0; i < route_count; i++) {
-        if (strcmp(route_metrics[i].route, route) == 0) {
-            route_metrics[i].count++;
-            return;
-        }
-    }
-
-    route_metrics = realloc(route_metrics, sizeof(struct route_metric) * (route_count + 1));
-    strcpy(route_metrics[route_count].route, route);
-    route_metrics[route_count].count = 1;
-    route_count++;
 }
 
 clock_t start_request() {
@@ -62,9 +50,52 @@ void display_metrics() {
     printf("  POST: %d\n", method_counts[1]);
     printf("  PUT: %d\n", method_counts[2]);
     printf("  DELETE: %d\n", method_counts[3]);
-    printf("Requests by Route:\n");
-    for (int i = 0; i < route_count; i++) {
-        printf("  %s: %d\n", route_metrics[i].route, route_metrics[i].count);
-    }
     printf("======================\n");
+}
+
+void save_general_metrics() {
+    FILE *file;
+    char metrics_dir[] = "metrics";
+
+    struct stat st;
+    if (stat(metrics_dir, &st) != 0) {
+#ifdef _WIN32
+        _mkdir(metrics_dir);
+#else
+        mkdir(metrics_dir, 0755);
+#endif
+    }
+
+    file = fopen("metrics/general_metrics.csv", "w");
+    if (!file) {
+        perror("Failed to create general_metrics.csv");
+        return;
+    }
+
+    fprintf(file, "Metric,Value\n");
+    fprintf(file, "Total Requests,%d\n", total_requests);
+    fprintf(file, "Average Response Time,%.3f\n", total_response_time / (total_requests > 0 ? total_requests : 1));
+    fclose(file);
+}
+
+void save_requests_by_method() {
+    FILE *file;
+
+    file = fopen("metrics/requests_by_method.csv", "w");
+    if (!file) {
+        perror("Failed to create requests_by_method.csv");
+        return;
+    }
+
+    fprintf(file, "Method,Requests\n");
+    fprintf(file, "GET,%d\n", method_counts[0]);
+    fprintf(file, "POST,%d\n", method_counts[1]);
+    fprintf(file, "PUT,%d\n", method_counts[2]);
+    fprintf(file, "DELETE,%d\n", method_counts[3]);
+    fclose(file);
+}
+
+void save_metrics_to_csv() {
+    save_general_metrics();
+    save_requests_by_method();
 }
