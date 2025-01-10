@@ -74,7 +74,7 @@ void save_general_metrics() {
 
     fprintf(file, "Metric,Value\n");
     fprintf(file, "Total Requests,%d\n", total_requests);
-    fprintf(file, "Average Response Time: %.3f ms\n", 1000*(total_response_time / (total_requests > 0 ? total_requests : 1)));
+    fprintf(file, "Average Response Time,%.3f\n", 1000*(total_response_time / (total_requests > 0 ? total_requests : 1)));
     fclose(file);
 }
 
