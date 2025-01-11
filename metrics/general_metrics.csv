@@ -1,3 +1,4 @@
 Metric,Value
-Total Requests,7
-Average Response Time,0.714
+Total Requests,9
+Average Response Time,0.556
+Memory Usage,4.18
