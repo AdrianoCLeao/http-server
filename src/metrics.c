@@ -1,12 +1,12 @@
-#include "metrics.h"
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <sys/stat.h>
 
 #ifdef _WIN32
-    #include <direct.h>
+    #include <windows.h>
+    #include <psapi.h>
 #else
     #include <unistd.h>
 #endif
@@ -41,6 +41,28 @@ void end_request(clock_t start_time) {
     total_response_time += elapsed_time;
 }
 
+size_t get_memory_usage() {
+#ifdef _WIN32
+    PROCESS_MEMORY_COUNTERS pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc))) {
+        return pmc.WorkingSetSize; 
+    }
+    return 0;
+#else
+    FILE *file = fopen("/proc/self/statm", "r");
+    if (!file) return 0;
+
+    long pages;
+    if (fscanf(file, "%ld", &pages) != 1) {
+        fclose(file);
+        return 0;
+    }
+    fclose(file);
+
+    return pages * sysconf(_SC_PAGESIZE); 
+#endif
+}
+
 void display_metrics() {
     printf("\n=== Server Metrics ===\n");
     printf("Total Requests: %d\n", total_requests);
@@ -50,6 +72,7 @@ void display_metrics() {
     printf("  POST: %d\n", method_counts[1]);
     printf("  PUT: %d\n", method_counts[2]);
     printf("  DELETE: %d\n", method_counts[3]);
+    printf("Memory Usage: %.2f MB\n", get_memory_usage() / (1024.0 * 1024.0));
     printf("======================\n");
 }
 
@@ -60,7 +83,7 @@ void save_general_metrics() {
     struct stat st;
     if (stat(metrics_dir, &st) != 0) {
 #ifdef _WIN32
-        _mkdir(metrics_dir);
+        mkdir(metrics_dir);
 #else
         mkdir(metrics_dir, 0755);
 #endif
@@ -75,6 +98,7 @@ void save_general_metrics() {
     fprintf(file, "Metric,Value\n");
     fprintf(file, "Total Requests,%d\n", total_requests);
     fprintf(file, "Average Response Time,%.3f\n", 1000*(total_response_time / (total_requests > 0 ? total_requests : 1)));
+    fprintf(file, "Memory Usage,%.2f MB\n", get_memory_usage() / (1024.0 * 1024.0));
     fclose(file);
 }
 
