@@ -10,7 +10,7 @@
 #endif
 
 #define BUFFER_SIZE 4096
-#define NOT_FOUND_PAGE "assets/responses/404.html"
+#define NOT_FOUND_PAGE "static/responses/404.html"
 
 void NotFoundException(int client_socket) {
     char buffer[BUFFER_SIZE];

@@ -11,7 +11,7 @@
 #endif
 
 #define BUFFER_SIZE 4096
-#define NOT_IMPLEMENTED_PAGE "assets/responses/501.html"
+#define NOT_IMPLEMENTED_PAGE "static/responses/501.html"
 
 void NotImplemented(int client_socket) {
     char buffer[BUFFER_SIZE];
